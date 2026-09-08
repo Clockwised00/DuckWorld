@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Heart Animation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #080103;
+    }
+
+    .controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    canvas,
+    .gift-image {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      max-width: none;
+      max-height: none;
+    }
+
+    canvas {
+      z-index: 1;
+    }
+
+    .gift-image {
+      z-index: 0;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    .back-button {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 4;
+      padding: 11px 16px;
+      color: #fff4f7;
+      background: rgba(55, 5, 24, .62);
+      border: 1px solid rgba(255, 175, 201, .7);
+      box-shadow: 0 0 18px rgba(255, 42, 125, .3);
+      font: 500 11px 'DM Mono', monospace;
+      letter-spacing: .08em;
+      text-decoration: none;
+      text-transform: uppercase;
+      backdrop-filter: blur(4px);
+      transition: background .2s ease, transform .2s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(116, 15, 55, .82);
+      transform: translateY(-2px);
+    }
+
+    .back-button:focus-visible {
+      outline: 2px solid #fff4f7;
+      outline-offset: 4px;
+    }
+
+    .thank-you {
+      position: fixed;
+      left: 50%;
+      bottom: clamp(24px, 6vh, 58px);
+      z-index: 3;
+      width: min(90vw, 620px);
+      padding: 16px 24px 18px;
+      color: #fff4f7;
+      text-align: center;
+      font: 700 clamp(1.25rem, 3vw, 2.1rem) Georgia, serif;
+      letter-spacing: .04em;
+      text-shadow: 0 0 8px #ff3d83, 0 0 22px rgba(255, 39, 116, .9), 0 3px 10px rgba(0, 0, 0, .8);
+      background: rgba(55, 5, 24, .5);
+      border: 1px solid rgba(255, 175, 201, .55);
+      box-shadow: 0 0 25px rgba(255, 42, 125, .28), inset 0 0 18px rgba(255, 149, 181, .12);
+      transform: translateX(-50%);
+      backdrop-filter: blur(4px);
+    }
+
+    .thank-you::before,
+    .thank-you::after {
+      color: #ff86b2;
+      content: '\2665';
+      font-size: .72em;
+      vertical-align: .12em;
+    }
+
+    .thank-you::before { margin-right: 12px; }
+    .thank-you::after { margin-left: 12px; }
+
+    svg {
+      position: absolute;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <img class="gift-image" src="images_videos/gift.jpg" alt="">
+  <a class="back-button" href="homepage.html">&#8592; Back to the pond</a>
+  <svg viewBox="0 0 600 552">
+    <path d="M300,107.77C284.68,55.67,239.76,0,162.31,0,64.83,0,0,82.08,0,171.71c0,.48,0,.95,0,1.43-.52,19.5,0,217.94,299.87,379.69v0l0,0,.05,0,0,0,0,0v0C600,391.08,600.48,192.64,600,173.14c0-.48,0-.95,0-1.43C600,82.08,535.17,0,437.69,0,360.24,0,315.32,55.67,300,107.77" fill="#ee5282"></path>
+  </svg>
+  <div class="thank-you">Thank you for the gifts</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
+  <script src="https://unpkg.co/gsap@3/dist/gsap.min.js"></script>
+  <script>
+    console.clear();
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      5000
+    );
+    camera.position.z = 500;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setClearColor(0x000000, 0);
+    renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const tl = gsap.timeline({
+      repeat: -1,
+      yoyo: true
+    });
+
+    const path = document.querySelector('path');
+    const length = path.getTotalLength();
+    const vertices = [];
+
+    for (let i = 0; i < length; i += 0.1) {
+      const point = path.getPointAtLength(i);
+      const vector = new THREE.Vector3(point.x, -point.y, 0);
+      vector.x += (Math.random() - 0.5) * 30;
+      vector.y += (Math.random() - 0.5) * 30;
+      vector.z += (Math.random() - 0.5) * 70;
+      vertices.push(vector);
+
+      tl.from(vector, {
+        x: 600 / 2,
+        y: -552 / 2,
+        z: 0,
+        ease: 'power2.inOut',
+        duration: 'random(2, 5)'
+      }, i * 0.002);
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(vertices);
+    const material = new THREE.PointsMaterial({
+      color: 0xee5282,
+      blending: THREE.AdditiveBlending,
+      size: 3
+    });
+    const particles = new THREE.Points(geometry, material);
+    particles.position.x -= 600 / 2;
+    particles.position.y += 552 / 2;
+    scene.add(particles);
+
+    gsap.fromTo(scene.rotation, {
+      y: -0.2
+    }, {
+      y: 0.2,
+      repeat: -1,
+      yoyo: true,
+      ease: 'power2.inOut',
+      duration: 3
+    });
+
+    function render() {
+      requestAnimationFrame(render);
+      geometry.setFromPoints(vertices);
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.addEventListener('resize', onWindowResize, false);
+    requestAnimationFrame(render);
+  </script>
+</body>
+</html>

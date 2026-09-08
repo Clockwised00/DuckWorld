@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e3742">
+  <title>DuckWorld | Inner Pond</title>
+  <link rel="prefetch" href="pond-code2.html">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://unpkg.co" crossorigin>
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js" as="script" crossorigin>
+  <link rel="preload" href="https://unpkg.co/gsap@3/dist/gsap.min.js" as="script" crossorigin>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700;800&display=swap');
+
+    :root {
+      --ink: #14343b;
+      --deep: #0e3742;
+      --cream: #fff9e9;
+      --yellow: #f8c849;
+      --coral: #e98450;
+      --mint: #a7d9c5;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--cream);
+      background: var(--deep);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      min-height: 100vh;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: clamp(28px, 6vw, 76px);
+      background: linear-gradient(180deg, rgba(8, 44, 53, .18) 0%, rgba(8, 40, 49, .16) 42%, rgba(7, 34, 43, .88) 100%), url('images_videos/back1.jpg') center / cover;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid rgba(255, 249, 233, .28);
+      margin: 16px;
+    }
+    .nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25px clamp(28px, 6vw, 76px);
+      font: 10px 'DM Mono', monospace;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .brand { color: var(--yellow); }
+    .access { display: inline-flex; align-items: center; gap: 8px; color: var(--cream); opacity: .82; }
+    .access::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 5px rgba(167, 217, 197, .22); }
+    .hero-copy { position: relative; z-index: 1; width: min(650px, 100%); animation: rise .8s ease-out both; }
+    .eyebrow { color: var(--yellow); font: 11px 'DM Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 20px 0 22px; max-width: 700px; font-size: clamp(4.2rem, 10vw, 10rem); line-height: .82; letter-spacing: -.07em; font-weight: 700; }
+    h1 em { color: var(--yellow); font-style: normal; }
+    .hero-copy p { max-width: 430px; margin: 0; color: rgba(255, 249, 233, .82); font-size: 16px; line-height: 1.6; }
+    .scroll-link { display: inline-flex; align-items: center; gap: 15px; margin-top: 40px; color: var(--cream); text-decoration: none; font: 10px 'DM Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
+    .scroll-link::after { content: '\2193'; color: var(--yellow); font-size: 18px; }
+
+    .welcome {
+      color: var(--ink);
+      background: var(--cream);
+      padding: clamp(58px, 9vw, 120px) clamp(24px, 8vw, 120px);
+    }
+    .welcome-grid { width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: clamp(35px, 8vw, 120px); align-items: center; }
+    .cards-column { display: grid; gap: clamp(30px, 5vw, 58px); }
+    .section-kicker { color: var(--coral); font: 11px 'DM Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { margin: 16px 0 20px; font-size: clamp(2.3rem, 5vw, 5.2rem); line-height: .9; letter-spacing: -.06em; }
+    .welcome-copy p { max-width: 420px; color: #5f6d6a; line-height: 1.7; }
+    .pond-card { position: relative; min-height: 430px; overflow: hidden; background: var(--deep); box-shadow: 16px 16px 0 #d7e7d8; }
+    .pond-card-link { display: block; color: inherit; text-decoration: none; }
+    .pond-card-link:focus-visible { outline: 3px solid var(--coral); outline-offset: 7px; }
+    .pond-card img, .pond-card video { width: 100%; height: 100%; min-height: 430px; display: block; object-fit: cover; filter: saturate(1.04) contrast(1.02); }
+    .pond-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 48%, rgba(8, 40, 49, .75)); pointer-events: none; }
+    .photo-label { position: absolute; left: 24px; bottom: 21px; z-index: 1; color: var(--cream); font: 10px 'DM Mono', monospace; letter-spacing: .11em; text-transform: uppercase; }
+    .second-card-link { display: block; color: inherit; text-decoration: none; }
+    .second-card-link:focus-visible { outline: 3px solid var(--coral); outline-offset: 7px; }
+
+    .footer { display: flex; justify-content: space-between; gap: 20px; padding: 25px clamp(24px, 8vw, 120px); color: rgba(255,249,233,.66); background: var(--deep); font: 10px 'DM Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .footer a { color: var(--yellow); text-decoration: none; }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 700px) {
+      .hero { min-height: 86vh; padding: 28px 24px 52px; }
+      .hero::after { margin: 10px; }
+      .nav { padding: 22px 24px; }
+      .nav .access { display: none; }
+      h1 { font-size: clamp(4rem, 20vw, 7rem); }
+      .hero-copy p { font-size: 14px; }
+      .welcome-grid { grid-template-columns: 1fr; }
+      .pond-card, .pond-card img, .pond-card video { min-height: 300px; }
+      .footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav" aria-label="Main navigation">
+      <div class="brand">DuckWorld / Inner Pond</div>
+      <div class="access">Vault access confirmed</div>
+    </nav>
+    <div class="hero-copy">
+      <div class="eyebrow">Welcome, keeper</div>
+      <h1>Find your<br><em>calm.</em></h1>
+      <p>The gate is open. Take a slower look around the pond and stay awhile in the bright side of DuckWorld.</p>
+      <a class="scroll-link" href="#pond">Explore the pond</a>
+    </div>
+  </header>
+
+  <main id="pond" class="welcome">
+    <div class="welcome-grid">
+      <section class="welcome-copy" aria-labelledby="welcome-title">
+        <div class="section-kicker">A private place to pause</div>
+        <h2 id="welcome-title">Good things<br>float here.</h2>
+        <p>The water is clear, the light is warm, and there is nowhere else you need to be right now. Welcome to the heart of DuckWorld.</p>
+      </section>
+      <div class="cards-column">
+        <a class="pond-card-link" href="pond-card.html" aria-label="Open a romantic letter from the inner pond">
+          <figure class="pond-card">
+            <img src="images_videos/back2.jpg" alt="A clear duck pond scene in the inner pond">
+            <figcaption class="photo-label">Inner pond · open letter</figcaption>
+          </figure>
+        </a>
+        <a class="pond-card-link second-card-link" href="pond-code2.html" aria-label="Open the glowing heart animation">
+          <figure class="pond-card">
+            <video id="walkingVideo" autoplay muted loop playsinline preload="auto" poster="images_videos/gift.jpg" aria-label="A duck walking through the pond">
+              <source src="images_videos/Walking.mp4" type="video/mp4">
+            </video>
+            <figcaption class="photo-label">Inner pond / Open Appreciation</figcaption>
+          </figure>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span></span>
+    <a href="index.html">Return to vault</a>
+  </footer>
+  <script>
+    const walkingVideo = document.getElementById('walkingVideo');
+    walkingVideo.addEventListener('error', () => {
+      const fallbackImage = document.createElement('img');
+      fallbackImage.src = 'images_videos/gift.jpg';
+      fallbackImage.alt = 'A gift waiting beside the pond';
+      walkingVideo.replaceWith(fallbackImage);
+    }, { once: true });
+  </script>
+</body>
+</html>
